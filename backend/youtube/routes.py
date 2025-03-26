@@ -1,4 +1,4 @@
-from flask import redirect, url_for, session, request, Blueprint
+from flask import redirect, url_for, session, request, Blueprint, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 import os
@@ -22,19 +22,16 @@ flow = Flow.from_client_secrets_file(
     redirect_uri="http://localhost:8080/callback"  # Make sure this matches in your client_secret.json
 )
 
-
-@youtube_routes.route("/auth")
+@youtube_routes.route("/auth", methods=["GET"])
 def login():
-    """Redirect to Google's OAuth 2.0 server."""
+    """Generate the Google OAuth2 URL and send it to the frontend."""
     authorization_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true", prompt="consent"
     )
-    # Save state in session for later verification
     session["state"] = state
-    return redirect(authorization_url)
+    return jsonify({"auth_url": authorization_url})
 
-
-@youtube_routes.route("/callback")
+@youtube_routes.route("/callback", methods=["GET"])
 def callback():
     """Handle the OAuth 2.0 server's response."""
     flow.fetch_token(authorization_response=request.url)
@@ -50,10 +47,9 @@ def callback():
         "scopes": credentials.scopes,
     }
 
-    return redirect(url_for("get_videos"))
+    return jsonify({"msg": "YouTube account linked successfully!"})
 
-
-@youtube_routes.route("/videos")
+@youtube_routes.route("/videos", methods=["GET"])
 def get_videos():
     """Retrieve the user's uploaded videos."""
     if "credentials" not in session:
@@ -75,19 +71,10 @@ def get_videos():
     )
     playlist_response = playlist_request.execute()
 
-    # Display video details
-    video_list = []
-    print(playlist_response)
-    for item in playlist_response["items"]:
-        title = item["snippet"]["title"]
-        video_id = item["snippet"]["resourceId"]["videoId"]
-        video_list.append(f"<li><a href='https://www.youtube.com/watch?v={video_id}'>{title}</a></li>")
+    return jsonify(playlist_response)
 
-    return f"<h1>Your Uploaded Videos:</h1><ul>{''.join(video_list)}</ul>"
-
-
-@youtube_routes.route("/logout")
+@youtube_routes.route("/logout", methods=["GET"])
 def logout():
     """Logout the user and clear session."""
     session.clear()
-    return redirect(url_for("home"))
+    return jsonify({"message": "User logged out successfully!"})
