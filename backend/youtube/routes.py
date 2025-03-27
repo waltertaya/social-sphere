@@ -23,7 +23,7 @@ flow = Flow.from_client_secrets_file(
 )
 
 @youtube_routes.route("/auth", methods=["GET"])
-def login():
+def auth():
     """Generate the Google OAuth2 URL and send it to the frontend."""
     authorization_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true", prompt="consent"
@@ -47,7 +47,8 @@ def callback():
         "scopes": credentials.scopes,
     }
 
-    return jsonify({"msg": "YouTube account linked successfully!"})
+    # return jsonify({"msg": "YouTube account linked successfully!"})
+    return redirect("http://localhost:5173?status=success")
 
 @youtube_routes.route("/videos", methods=["GET"])
 def get_videos():
