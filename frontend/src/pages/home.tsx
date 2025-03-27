@@ -7,15 +7,41 @@ const Home: React.FC = () => {
     YouTube: false,
   });
 
+  // API Base url
+  const API_BASE_URL = "http://localhost:8080/api/v2/youtube";
+  // retrieve the access_token from the session storage
+  const JwtToken = sessionStorage.getItem("access_token");
+
   const handleLinkAccount = (platform: string) => {
     if (platform === "YouTube") {
       // Simulate authentication (replace with actual API call)
-      fetch("http://localhost:8080/auth")
+      fetch(`${API_BASE_URL}/auth`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${JwtToken}`,
+        },
+      })
         .then((response) => response.json())
         .then((data) => {
-          window.location.href = data.auth_url; // Redirect to auth URL
+          // If the backend returns { "status": "already_linked" }, handle it
+          if (data.status === "already_linked") {
+            // e.g., redirect from the frontend
+            window.location.href =
+              "http://localhost:5173?status=already_linked";
+            return;
+          }
+          // Otherwise, if we have an auth_url, redirect to Google
+          if (data.auth_url) {
+            window.location.href = data.auth_url;
+          } else {
+            console.error("No auth_url received in the response.");
+          }
         })
-        .catch((error) => console.error("Error during authentication:", error));
+        .catch((error) => {
+          console.error("Error during authentication:", error);
+        });
+    } else {
+      console.warn(`Platform ${platform} is not supported.`);
     }
   };
 

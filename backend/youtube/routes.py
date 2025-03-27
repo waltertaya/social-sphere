@@ -2,8 +2,13 @@ from flask import redirect, url_for, session, request, Blueprint, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 import os
-import json
+from dotenv import load_dotenv
 import google.oauth2.credentials
+
+from flask_jwt_extended import jwt_required, get_jwt_identity
+import secrets
+
+from .cache import r
 
 youtube_routes = Blueprint('youtube_routes', __name__)
 
@@ -15,40 +20,73 @@ CLIENT_SECRETS_FILE = "client_secret.json"
 # Define OAuth scopes
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
+load_dotenv()
+
 # Initialize Flow
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    redirect_uri="http://localhost:8080/callback"  # Make sure this matches in your client_secret.json
+    redirect_uri="http://localhost:8080/api/v2/youtube/callback"  # Make sure this matches in your client_secret.json
 )
 
 @youtube_routes.route("/auth", methods=["GET"])
+@jwt_required()
 def auth():
-    """Generate the Google OAuth2 URL and send it to the frontend."""
-    authorization_url, state = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true", prompt="consent"
+    user_id = get_jwt_identity()
+
+        # check if the user ia already linked: 
+    if r.get(user_id):
+        # return redirect("http://localhost:5173?status=already_linked")
+        return jsonify({"status": "already_linked"})
+    
+    state = secrets.token_urlsafe(16)  # Generate a random state token
+
+    # Store state and user_id in Redis
+    r.set(state, user_id, ex=300)  # Expire after 5 minutes
+
+    authorization_url, _ = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true", state=state, prompt="consent"
     )
-    session["state"] = state
     return jsonify({"auth_url": authorization_url})
+
 
 @youtube_routes.route("/callback", methods=["GET"])
 def callback():
-    """Handle the OAuth 2.0 server's response."""
-    flow.fetch_token(authorization_response=request.url)
-    credentials = flow.credentials
+    state = request.args.get("state")
+    if not state:
+        return jsonify({"error": "Missing state parameter"}), 400
 
-    # Save credentials in session
-    session["credentials"] = {
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-    }
+    user_id = r.get(state)
+    if not user_id:
+        return jsonify({"error": "Invalid or expired state token"}), 400
 
-    # return jsonify({"msg": "YouTube account linked successfully!"})
-    return redirect("http://localhost:5173?status=success")
+    # Decode user_id if it's in bytes
+    if isinstance(user_id, bytes):
+        user_id = user_id.decode("utf-8")
+
+    try:
+        flow.fetch_token(authorization_response=request.url)
+        credentials = flow.credentials
+
+        # Save credentials in Redis
+        r.set(user_id, credentials.to_json())
+
+        # Save credentials in session (optional)
+        session["credentials"] = {
+            "token": credentials.token,
+            "refresh_token": credentials.refresh_token,
+            "token_uri": credentials.token_uri,
+            "client_id": credentials.client_id,
+            "client_secret": credentials.client_secret,
+            "scopes": credentials.scopes,
+        }
+
+        return redirect("http://localhost:5173?status=success")
+        # return jsonify({"status": "success"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @youtube_routes.route("/videos", methods=["GET"])
 def get_videos():
@@ -75,7 +113,11 @@ def get_videos():
     return jsonify(playlist_response)
 
 @youtube_routes.route("/logout", methods=["GET"])
+@jwt_required()
 def logout():
     """Logout the user and clear session."""
     session.clear()
-    return jsonify({"message": "User logged out successfully!"})
+    # remove credentials from cache
+    user_id = get_jwt_identity()
+    r.delete(user_id)
+    return jsonify({"msg": "Logged out successfully!"})

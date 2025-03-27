@@ -7,3 +7,4 @@ class Config():
     SQLALCHEMY_DATABASE_URI=os.getenv('DB_URI')
     SQLALCHEMY_TRACK_MODIFICATIONS=os.getenv('TRACK_MODIFICATIONS')
     SECRET_KEY=os.getenv('SECRET_KEY')
+    JWT_SECRET_KEY=os.getenv('JWT_SECRET_KEY')

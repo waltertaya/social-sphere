@@ -42,6 +42,9 @@ const Auth: React.FC = () => {
         sameSite: "strict",
       });
 
+      // stores the access token in the session
+      sessionStorage.setItem("access_token", response.data.access_token);
+
       // Redirect to the dashboard
       window.location.href = "/";
     } catch (err) {
