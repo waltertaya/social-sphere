@@ -1,7 +1,6 @@
 from flask import Flask, render_template
 from dotenv import load_dotenv
 from flask_cors import CORS
-from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
 from youtube.routes import youtube_routes

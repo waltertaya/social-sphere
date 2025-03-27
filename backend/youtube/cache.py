@@ -15,11 +15,3 @@ r = redis.Redis(
     username=os.getenv('CACHE_USERNAME'),
     password=os.getenv('CACHE_PASSWORD'),
 )
-
-# success = r.set('foo', 'bar')
-# # True
-
-# result = r.get('foo')
-# print(result)
-# # >>> bar
-
