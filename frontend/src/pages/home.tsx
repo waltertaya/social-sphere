@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Home: React.FC = () => {
   const [linkedAccounts, setLinkedAccounts] = useState<{
@@ -6,15 +6,52 @@ const Home: React.FC = () => {
   }>({
     YouTube: false,
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // API Base url
+  // API Base URL
   const API_BASE_URL = "http://localhost:8080/api/v2/youtube";
-  // retrieve the access_token from the session storage
+  // Retrieve the access token from session storage
   const JwtToken = sessionStorage.getItem("access_token");
 
+  // Fetch the initial linked account status
+  useEffect(() => {
+    if (!JwtToken) {
+      console.error("No access token found.");
+      setError("Access token missing. Please log in.");
+      return;
+    }
+
+    setLoading(true);
+    fetch(`${API_BASE_URL}/status`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${JwtToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.linked) {
+          setLinkedAccounts((prev) => ({ ...prev, YouTube: true }));
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching account status:", err);
+        setError("Failed to fetch account status. Please try again.");
+      })
+      .finally(() => setLoading(false));
+  }, [JwtToken]);
+
+  // Handle linking an account
   const handleLinkAccount = (platform: string) => {
+    if (!JwtToken) {
+      console.error("No access token found.");
+      setError("Access token missing. Please log in.");
+      return;
+    }
+
     if (platform === "YouTube") {
-      // Simulate authentication (replace with actual API call)
+      setLoading(true);
       fetch(`${API_BASE_URL}/auth`, {
         method: "GET",
         headers: {
@@ -23,42 +60,40 @@ const Home: React.FC = () => {
       })
         .then((response) => response.json())
         .then((data) => {
-          // If the backend returns { "status": "already_linked" }, handle it
           if (data.status === "already_linked") {
-            // e.g., redirect from the frontend
-            window.location.href =
-              "http://localhost:5173?status=already_linked";
+            alert("YouTube account is already linked.");
+            setLinkedAccounts((prev) => ({ ...prev, YouTube: true }));
             return;
           }
-          // Otherwise, if we have an auth_url, redirect to Google
           if (data.auth_url) {
             window.location.href = data.auth_url;
           } else {
             console.error("No auth_url received in the response.");
+            setError("Failed to retrieve authentication URL.");
           }
         })
         .catch((error) => {
           console.error("Error during authentication:", error);
-        });
+          setError("Failed to link the account. Please try again.");
+        })
+        .finally(() => setLoading(false));
     } else {
       console.warn(`Platform ${platform} is not supported.`);
     }
   };
 
-  const handleAccountLinked = (platform: string) => {
-    // This function will be triggered after successful authentication
-    setLinkedAccounts((prev) => ({ ...prev, [platform]: true }));
-  };
-
   return (
     <div className="flex h-screen select-none">
+      {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-300 p-5">
         <h2 className="text-lg mb-5">Menu</h2>
         <nav>
           {[
+            "Dashboard",
             "User Profiles",
             "Social Accounts",
             "Posts",
+            "Analytics",
             "Messages",
             "API Key",
             "Webhooks",
@@ -73,10 +108,18 @@ const Home: React.FC = () => {
           ))}
         </nav>
       </aside>
+
+      {/* Main Content */}
       <main className="flex-grow p-5">
         <header className="flex justify-between items-center mb-5">
           <h1 className="text-2xl">Social Accounts</h1>
         </header>
+
+        {/* Error and Loading Indicators */}
+        {loading && <p className="text-blue-500">Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+
+        {/* Social Accounts Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {[
             {
@@ -105,7 +148,7 @@ const Home: React.FC = () => {
             },
             {
               name: "Telegram",
-              icon: "https://img.icons8.com/ios-filled/50/null/telegram-Home.png",
+              icon: "https://img.icons8.com/ios-filled/50/null/telegram-app.png",
             },
             {
               name: "TikTok",

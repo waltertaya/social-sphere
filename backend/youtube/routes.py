@@ -34,7 +34,7 @@ flow = Flow.from_client_secrets_file(
 def auth():
     user_id = get_jwt_identity()
 
-        # check if the user ia already linked: 
+    # check if the user ia already linked: 
     if r.get(user_id):
         # return redirect("http://localhost:5173?status=already_linked")
         return jsonify({"status": "already_linked"})
@@ -88,7 +88,29 @@ def callback():
         return jsonify({"error": str(e)}), 500
 
 
+@youtube_routes.route("/logout", methods=["GET"])
+@jwt_required()
+def logout():
+    """Logout the user and clear session."""
+    session.clear()
+    # remove credentials from cache
+    user_id = get_jwt_identity()
+    r.delete(user_id)
+    return jsonify({"msg": "Logged out successfully!"})
+
+
+# check the status of the user
+@youtube_routes.route("/status", methods=["GET"])
+@jwt_required()
+def status():
+    user_id = get_jwt_identity()
+    if r.get(user_id):
+        return jsonify({"linked": True})
+    return jsonify({"linked": False})
+
+
 @youtube_routes.route("/videos", methods=["GET"])
+@jwt_required()
 def get_videos():
     """Retrieve the user's uploaded videos."""
     if "credentials" not in session:
@@ -112,12 +134,4 @@ def get_videos():
 
     return jsonify(playlist_response)
 
-@youtube_routes.route("/logout", methods=["GET"])
-@jwt_required()
-def logout():
-    """Logout the user and clear session."""
-    session.clear()
-    # remove credentials from cache
-    user_id = get_jwt_identity()
-    r.delete(user_id)
-    return jsonify({"msg": "Logged out successfully!"})
+
