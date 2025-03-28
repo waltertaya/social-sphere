@@ -15,7 +15,7 @@ const Auth: React.FC = () => {
   const [success, setSuccess] = useState("");
 
   // API base URL
-  const BASE_URL = "http://127.0.0.1:8000/api/v2/auth";
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   // Handlers
   const handleLoginSubmit = async (e: React.FormEvent) => {

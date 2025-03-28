@@ -11,7 +11,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // API Base URL
-  const API_BASE_URL = "http://localhost:8080/api/v2/youtube";
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
   // Retrieve the access token from session storage
   const JwtToken = sessionStorage.getItem("access_token");
 
