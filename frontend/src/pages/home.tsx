@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
 
 const Home: React.FC = () => {
   const [linkedAccounts, setLinkedAccounts] = useState<{
@@ -82,32 +83,48 @@ const Home: React.FC = () => {
     }
   };
 
+  // Handle unlinking an account (only for YouTube as per requirements)
+  const handleUnlinkAccount = (platform: string) => {
+    if (!JwtToken) {
+      console.error("No access token found.");
+      setError("Access token missing. Please log in.");
+      return;
+    }
+
+    // Show confirmation popup before unlinking
+    if (
+      !window.confirm("Are you sure you want to unlink your YouTube account?")
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    fetch(`${API_BASE_URL}/logout`, {
+      method: "GET", // adjust method if needed by your backend
+      headers: {
+        Authorization: `Bearer ${JwtToken}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setLinkedAccounts((prev) => ({ ...prev, [platform]: false }));
+          alert("YouTube account unlinked successfully.");
+        } else {
+          alert("Failed to unlink the account.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error during unlinking:", error);
+        setError("Failed to unlink the account. Please try again.");
+      })
+      .finally(() => setLoading(false));
+  };
+
   return (
     <div className="flex h-screen select-none">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-300 p-5">
-        <h2 className="text-lg mb-5">Menu</h2>
-        <nav>
-          {[
-            "Dashboard",
-            "User Profiles",
-            "Social Accounts",
-            "Posts",
-            "Analytics",
-            "Messages",
-            "API Key",
-            "Webhooks",
-          ].map((item, index) => (
-            <a
-              key={index}
-              href="#"
-              className="block text-gray-800 mb-2 p-2 rounded hover:bg-gray-200 transition"
-            >
-              {item}
-            </a>
-          ))}
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="flex-grow p-5">
@@ -157,11 +174,24 @@ const Home: React.FC = () => {
           ].map((social, index) => (
             <div
               key={index}
-              onClick={() =>
-                linkedAccounts[social.name]
-                  ? alert(`${social.name} is already linked.`)
-                  : handleLinkAccount(social.name)
-              }
+              onClick={() => {
+                if (social.name === "YouTube") {
+                  if (linkedAccounts[social.name]) {
+                    // If YouTube is already linked, handle unlinking with confirmation.
+                    handleUnlinkAccount(social.name);
+                  } else {
+                    // If not linked, handle linking.
+                    handleLinkAccount(social.name);
+                  }
+                } else {
+                  // For other platforms, you can either show a message or handle accordingly.
+                  if (linkedAccounts[social.name]) {
+                    alert(`${social.name} is already linked.`);
+                  } else {
+                    handleLinkAccount(social.name);
+                  }
+                }
+              }}
               className="flex flex-col items-center justify-center p-5 bg-white border border-gray-300 rounded-lg shadow-sm text-center transform transition hover:translate-y-[-5px] hover:shadow-md cursor-pointer"
             >
               <img

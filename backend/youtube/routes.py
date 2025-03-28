@@ -1,12 +1,14 @@
 from flask import redirect, url_for, session, request, Blueprint, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 import os
 from dotenv import load_dotenv
-import google.oauth2.credentials
+from google.oauth2.credentials import Credentials
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import secrets
+import json
 
 from .cache import r
 
@@ -99,7 +101,6 @@ def logout():
     return jsonify({"msg": "Logged out successfully!"})
 
 
-# check the status of the user
 @youtube_routes.route("/status", methods=["GET"])
 @jwt_required()
 def status():
@@ -113,10 +114,18 @@ def status():
 @jwt_required()
 def get_videos():
     """Retrieve the user's uploaded videos."""
-    if "credentials" not in session:
-        return redirect(url_for("login"))
+    user_id = get_jwt_identity()
+    stored_credentials = r.get(user_id)
 
-    credentials = google.oauth2.credentials.Credentials(**session["credentials"])
+    if not stored_credentials:
+        return jsonify({"error": "User not linked"}), 400
+    
+    try:
+        stored_credentials = json.loads(stored_credentials)  # Convert JSON string to dict
+        credentials = Credentials.from_authorized_user_info(stored_credentials)
+    except Exception as e:
+        return jsonify({"error": "Invalid credentials format", "details": str(e)}), 500
+
     youtube = build("youtube", "v3", credentials=credentials)
 
     # Get the user's channel details
@@ -128,10 +137,61 @@ def get_videos():
     playlist_request = youtube.playlistItems().list(
         part="snippet",
         playlistId=uploads_playlist_id,
-        maxResults=10  # Number of videos to fetch
+        maxResults=10
     )
     playlist_response = playlist_request.execute()
 
     return jsonify(playlist_response)
 
 
+@youtube_routes.route("/upload", methods=["POST"])
+@jwt_required()
+def upload_video():
+    """Upload a video to the user's YouTube channel."""
+    user_id = get_jwt_identity()
+    stored_credentials = r.get(user_id)
+
+    if not stored_credentials:
+        return jsonify({"error": "User not linked"}), 400
+
+    try:
+        stored_credentials = json.loads(stored_credentials)  # Convert JSON string to dict
+        credentials = Credentials.from_authorized_user_info(stored_credentials)
+    except Exception as e:
+        return jsonify({"error": "Invalid credentials format", "details": str(e)}), 500
+
+    youtube = build("youtube", "v3", credentials=credentials)
+
+    # Get the user's channel details
+    channel_request = youtube.channels().list(part="contentDetails", mine=True)
+    channel_response = channel_request.execute()
+    uploads_playlist_id = channel_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+    # Upload video
+    request_data = request.get_json()
+    video_title = request_data.get("title")
+    video_description = request_data.get("description")
+    video_path = request_data.get("path")
+
+    if not video_title or not video_description or not video_path:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    request_body = {
+        "snippet": {
+            "title": video_title,
+            "description": video_description
+        },
+        "status": {
+            "privacyStatus": "private"
+        }
+    }
+
+    media_file = MediaFileUpload(video_path)
+    insert_request = youtube.videos().insert(
+        part="snippet,status",
+        body=request_body,
+        media_body=media_file
+    )
+    response = insert_request.execute()
+
+    return jsonify(response)
