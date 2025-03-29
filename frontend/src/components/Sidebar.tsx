@@ -1,10 +1,12 @@
 import React from "react";
 import Logout from "./Logout";
+import UserProfile from "./UserProfile";
 
 const Sidebar: React.FC = () => {
   return (
     <aside className="w-64 bg-white border-r border-gray-300 p-5">
       <h2 className="text-lg mb-5">Menu</h2>
+      <UserProfile />
       <nav>
         {[
           "Dashboard",

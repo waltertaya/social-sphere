@@ -74,3 +74,14 @@ def refresh():
     return jsonify({
         'access_token': access_token
     })
+
+@auth_blueprint.route('/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(id=current_user).first()
+
+    return jsonify({
+        'username': user.username,
+        'email': user.email
+    }), 200

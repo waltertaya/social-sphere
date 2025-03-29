@@ -13,12 +13,15 @@ const Auth: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // API base URL
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   // Handlers
   const handleLoginSubmit = async (e: React.FormEvent) => {
+
+    setLoading(true);
     e.preventDefault();
     try {
       const response = await axios.post(`${BASE_URL}/login`, {
@@ -55,6 +58,7 @@ const Auth: React.FC = () => {
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
+    setLoading(true);
     e.preventDefault();
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -245,13 +249,22 @@ const Auth: React.FC = () => {
               </button>
             </div>
           )}
-
-          {/* -- Submit Button -- */}
+           {/* -- Submit Button -- */}
           <button
             type="submit"
-            className="w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 cursor-pointer"
+            className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 cursor-pointer ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            {isLogin ? "Log In" : "Sign Up"}
+            {loading ? (
+              // center
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white border-opacity-50"></div>
+            ) : isLogin ? (
+              "Log In"
+            ) : (
+              "Sign Up"
+            )}
           </button>
         </form>
 

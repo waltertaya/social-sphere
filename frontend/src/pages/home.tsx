@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import socials from "../components/SocialAccounts";
 import SocialList from "../components/SocialList";
+import Accordion from "../components/Accordion";
 
 const Home: React.FC = () => {
   const [linkedAccounts, setLinkedAccounts] = useState<{
@@ -117,7 +118,14 @@ const Home: React.FC = () => {
       <Sidebar />
       <main className="flex-grow p-5">
         <header className="flex justify-between items-center mb-5">
-          <h1 className="text-2xl">Social Accounts</h1>
+          <h1 className="text-2xl display flex items-center">
+            <img
+              src="/app.svg"
+              alt="Logo"
+              className="w-10 h-10 mr-2"
+            />
+            <span className="text-gray-800 font-bold">Social Accounts</span>
+            </h1>
         </header>
         {loading && <p className="text-blue-500">Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
@@ -127,6 +135,7 @@ const Home: React.FC = () => {
           onLink={handleLinkAccount}
           onUnlink={handleUnlinkAccount}
         />
+        <Accordion />
       </main>
     </div>
   );
