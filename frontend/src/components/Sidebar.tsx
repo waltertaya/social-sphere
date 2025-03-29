@@ -1,4 +1,5 @@
 import React from "react";
+import Logout from "./Logout";
 
 const Sidebar: React.FC = () => {
   return (
@@ -24,6 +25,9 @@ const Sidebar: React.FC = () => {
           </a>
         ))}
       </nav>
+      <div className="absolute bottom-5 left-5 right-5">
+        <Logout />
+      </div>
     </aside>
   );
 };
