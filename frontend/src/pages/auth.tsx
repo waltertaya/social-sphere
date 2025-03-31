@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+
 const Auth: React.FC = () => {
   // Toggle between login and sign up
   const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +23,6 @@ const Auth: React.FC = () => {
 
   // Handlers
   const handleLoginSubmit = async (e: React.FormEvent) => {
-
     setLoading(true);
     e.preventDefault();
     try {
@@ -109,8 +111,8 @@ const Auth: React.FC = () => {
           {isLogin ? "Log in to your account" : "Create an account"}
         </h2>
 
-        {/* -- Social Logins -- */}
-        <div className="mb-4 flex flex-col space-y-2">
+        {/* -- Social Logins --  */}
+        <div className="mb-4 flex flex-row justify-center space-x-4">
           <button
             className="flex items-center justify-center rounded bg-gray-100 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-200 cursor-pointer"
             onClick={() => console.log("Sign in with Google")}
@@ -178,61 +180,85 @@ const Auth: React.FC = () => {
           onSubmit={isLogin ? handleLoginSubmit : handleSignupSubmit}
         >
           {/* -- Username -- */}
-          <div>
+          <div className="relative">
+            <FontAwesomeIcon
+              icon={faUser}
+              className="absolute top-2/3 left-3 transform -translate-y-1/2 text-gray-400"
+            />
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Username
             </label>
             <input
               type="text"
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              title="Enter your username"
+              placeholder="Username"
             />
           </div>
 
           {/* -- Email (only for Sign Up) -- */}
           {!isLogin && (
-            <div>
+            <div className="relative">
+              <FontAwesomeIcon
+                icon={faEnvelope}
+                className="absolute top-2/3 left-3 transform -translate-y-1/2 text-gray-400"
+              />
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Email
               </label>
               <input
                 type="email"
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                title="Enter your email address"
+                placeholder="Email address"
               />
             </div>
           )}
 
           {/* -- Password -- */}
-          <div>
+          <div className="relative">
+            <FontAwesomeIcon
+              icon={faLock}
+              className="absolute top-2/3 left-3 transform -translate-y-1/2 text-gray-400"
+            />
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Password
             </label>
             <input
               type="password"
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              title="Enter your password"
+              placeholder="Password"
             />
           </div>
 
           {/* -- Confirm Password (only for Sign Up) -- */}
           {!isLogin && (
-            <div>
+            <div className="relative">
+              <FontAwesomeIcon
+                icon={faLock}
+                className="absolute top-2/3 left-3 transform -translate-y-1/2 text-gray-400"
+              />
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <input
                 type="password"
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                title="Confirm your password"
+                placeholder="Confirm Password"
               />
             </div>
           )}
@@ -249,7 +275,7 @@ const Auth: React.FC = () => {
               </button>
             </div>
           )}
-           {/* -- Submit Button -- */}
+          {/* -- Submit Button -- */}
           <button
             type="submit"
             className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 cursor-pointer ${

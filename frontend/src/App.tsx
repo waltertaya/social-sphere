@@ -1,7 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Home from "./pages/home";
 import Auth from "./pages/auth";
-
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
@@ -22,7 +26,9 @@ const isAuthenticated = () => {
 };
 
 // Auth guard component
-const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return isAuthenticated() ? children : <Navigate to="/auth" replace />;
 };
 
@@ -32,14 +38,14 @@ const App = () => {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route
-          path="/"
+          path="/*"
           element={
             <PrivateRoute>
               <Home />
             </PrivateRoute>
           }
         />
-        {/* Redirect any unknown routes to home or auth */}
+        {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
