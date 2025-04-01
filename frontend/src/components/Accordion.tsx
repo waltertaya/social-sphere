@@ -22,9 +22,10 @@ const plans = [
 ];
 
 const Accordion = () => {
-  const [expanded, setExpanded] = useState(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
-  const toggleAccordion = (index) => {
+
+  const toggleAccordion = (index: number): void => {
     setExpanded(expanded === index ? null : index); // Expand or collapse
   };
 
@@ -47,7 +48,7 @@ const Accordion = () => {
                     viewBox="0 0 24 24"
                     stroke-width="1.5"
                     stroke="currentColor"
-                    class="size-6"
+                    className="size-6"
                   >
                     <path
                       stroke-linecap="round"
@@ -62,7 +63,7 @@ const Accordion = () => {
                     viewBox="0 0 24 24"
                     stroke-width="1.5"
                     stroke="currentColor"
-                    class="size-6"
+                    className="size-6"
                   >
                     <path
                       stroke-linecap="round"

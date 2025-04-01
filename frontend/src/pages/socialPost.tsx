@@ -1,10 +1,44 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronUp, faChevronDown, faUpload } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronUp,
+  faChevronDown,
+  faUpload,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import SocialNetworks from "../components/SocialNetworks";
+import PostTimeline from "../components/PostTimeline";
 
 const PostManager = () => {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => ["image/png", "image/jpeg", "video/mp4"].includes(file.type));
+    
+    if (validFiles.length) {
+      setSelectedFiles(prevFiles => [...prevFiles, ...validFiles]);
+    } else {
+      alert("Invalid file type. Please upload a PNG, JPG, or MP4 file.");
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files);
+    const validFiles = files.filter(file => ["image/png", "image/jpeg", "video/mp4"].includes(file.type));
+    
+    if (validFiles.length) {
+      setSelectedFiles(prevFiles => [...prevFiles, ...validFiles]);
+    } else {
+      alert("Invalid file type. Please upload a PNG, JPG, or MP4 file.");
+    }
+  };
 
   return (
     <main className="p-6 bg-white rounded-lg shadow-md">
@@ -19,44 +53,93 @@ const PostManager = () => {
           <FontAwesomeIcon icon={isMinimized ? faChevronDown : faChevronUp} />
         </button>
       </div>
-      
+
       {!isMinimized && (
         <div>
           {/* Social Networks */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Social Networks</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Social Networks
+            </label>
             <div className="flex flex-wrap gap-3 mt-2">
-                <SocialNetworks />
+              <SocialNetworks />
             </div>
           </div>
 
           {/* Post Text */}
           <textarea
-            className="w-full border p-2 rounded mt-2"
+            className="w-full border-2 border-gray-300 rounded p-2 mt-2 focus:border-blue-500 focus:outline-none"
             rows={3}
             placeholder="Enter post text"
           />
 
           {/* Upload Section */}
-          <div className="mt-4 border-dashed border-2 p-4 text-center rounded cursor-pointer hover:bg-gray-50">
-            <FontAwesomeIcon icon={faUpload} className="text-gray-500" />
-            <p className="text-sm text-gray-600">Click to Upload or Drag & Drop</p>
-            <p className="text-xs text-gray-400">PNG, JPG, MP4 up to 25MB</p>
+          <div 
+            className="mt-4 border-dashed border-2 p-4 text-center rounded cursor-pointer hover:bg-gray-50 border-gray-300"
+            onDrop={handleDrop}
+            onDragOver={(event) => event.preventDefault()}
+          >
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <FontAwesomeIcon icon={faUpload} className="text-gray-500" />
+              <p className="text-sm text-gray-600">
+                Click to Upload or Drag & Drop
+              </p>
+              <p className="text-xs text-gray-400">PNG, JPG, MP4 up to 25MB</p>
+            </label>
+            <input
+              type="file"
+              id="file-upload"
+              className="hidden"
+              accept="image/png, image/jpeg, video/mp4"
+              multiple
+              onChange={handleFileUpload}
+            />
           </div>
+
+          {/* Preview Section */}
+          {selectedFiles.length > 0 && (
+            <div className="mt-4 p-2 rounded grid grid-cols-2 gap-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between border p-2 rounded">
+                  {file.type.startsWith("image") ? (
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                  ) : (
+                    <video
+                      src={URL.createObjectURL(file)}
+                      controls
+                      className="w-32 h-20 rounded"
+                    />
+                  )}
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Remove file"
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="mt-4 flex gap-2">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Post Now</button>
-            <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Schedule Post</button>
+            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer">
+              Post Now
+            </button>
+            <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 cursor-pointer">
+              Schedule Post
+            </button>
           </div>
         </div>
       )}
 
       {/* Post Timeline */}
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Post Timeline</h3>
-        <p className="text-gray-500 mt-2">No posts found.</p>
-      </div>
+      <PostTimeline />
     </main>
   );
 };

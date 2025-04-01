@@ -29,7 +29,7 @@ const UserProfile = () => {
   }, [JwtToken, API_BASE_URL]);
 
   return (
-    <div className="p-4 bg-blue-50 rounded-lg shadow-md flex items-center gap-4">
+    <div className="p-4 bg-blue-50 rounded-lg shadow-md flex items-center gap-4 mb-5 mt-5">
       {/* User Info */}
       <div>
         <p className="text-sm font-semibold text-gray-800">Basic Plan</p>
