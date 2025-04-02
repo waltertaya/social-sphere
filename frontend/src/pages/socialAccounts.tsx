@@ -23,7 +23,7 @@ const SocialAccounts: React.FC = () => {
     }
 
     setLoading(true);
-    fetch(`${API_BASE_URL}/status`, {
+    fetch(`${API_BASE_URL}/youtube/status`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,
@@ -51,7 +51,7 @@ const SocialAccounts: React.FC = () => {
 
     if (platform === "YouTube") {
       setLoading(true);
-      fetch(`${API_BASE_URL}/auth`, {
+      fetch(`${API_BASE_URL}/youtube/auth`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${JwtToken}`,
@@ -92,7 +92,7 @@ const SocialAccounts: React.FC = () => {
     }
 
     setLoading(true);
-    fetch(`${API_BASE_URL}/logout`, {
+    fetch(`${API_BASE_URL}/youtube/logout`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,

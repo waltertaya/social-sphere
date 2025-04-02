@@ -2,19 +2,60 @@ import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUser,
+  faEnvelope,
+  faLock,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+  };
+
+  const isFieldInvalid = (field: keyof typeof formData) => {
+    if (!touched[field]) return false;
+    if (field === "email")
+      return !/\S+@\S+\.\S+/.test(formData.email);
+    if (field === "confirmPassword")
+      return !isLogin && formData.password !== formData.confirmPassword;
+    return formData[field].trim() === "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +63,7 @@ const Auth: React.FC = () => {
     setError("");
     setSuccess("");
 
-    if (!isLogin && password !== confirmPassword) {
+    if (!isLogin && formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       setLoading(false);
       return;
@@ -30,8 +71,8 @@ const Auth: React.FC = () => {
 
     const endpoint = isLogin ? "/login" : "/register";
     const payload = isLogin
-      ? { username, password }
-      : { username, email, password };
+      ? { username: formData.username, password: formData.password }
+      : { username: formData.username, email: formData.email, password: formData.password };
 
     try {
       const response = await axios.post(`${BASE_URL}${endpoint}`, payload);
@@ -148,11 +189,17 @@ const Auth: React.FC = () => {
             </label>
             <input
               type="text"
-              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              onBlur={handleBlur}
               required
               placeholder="Username"
+              className={`w-full rounded border pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                isFieldInvalid("username")
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
             />
           </div>
 
@@ -167,11 +214,17 @@ const Auth: React.FC = () => {
               </label>
               <input
                 type="email"
-                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 required
                 placeholder="Email address"
+                className={`w-full rounded border pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                  isFieldInvalid("email")
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-indigo-500"
+                }`}
               />
             </div>
           )}
@@ -185,13 +238,30 @@ const Auth: React.FC = () => {
               Password
             </label>
             <input
-              type="password"
-              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
               required
               placeholder="Password"
+              className={`w-full rounded border pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                isFieldInvalid("password")
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
             />
+            <button
+              type="button"
+              className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400"
+              onClick={() => setShowPassword(!showPassword)}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              <FontAwesomeIcon
+                icon={showPassword ? faEye : faEyeSlash}
+                className="h-5 w-5"
+              />
+            </button>
           </div>
 
           {!isLogin && (
@@ -205,12 +275,29 @@ const Auth: React.FC = () => {
               </label>
               <input
                 type="password"
-                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 required
                 placeholder="Confirm Password"
+                className={`w-full rounded border pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                  isFieldInvalid("confirmPassword")
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-indigo-500"
+                }`}
               />
+              <button
+                type="button"
+                className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                <FontAwesomeIcon
+                  icon={showConfirmPassword ? faEye : faEyeSlash}
+                  className="h-5 w-5"
+                />
+              </button>
             </div>
           )}
 
@@ -227,10 +314,10 @@ const Auth: React.FC = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 flex justify-center items-center ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            disabled={loading}
           >
             {loading ? (
               <span className="flex space-x-1">
