@@ -1,15 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 
 const Auth: React.FC = () => {
-  // Toggle between login and sign up
   const [isLogin, setIsLogin] = useState(true);
-
-  // Form states
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,95 +14,63 @@ const Auth: React.FC = () => {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // API base URL
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  // Handlers
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(`${BASE_URL}/login`, {
-        username,
-        password,
-      });
-      setSuccess("Login successful!");
-      setError("");
-      console.log("Login Response:", response.data);
-
-      // Save tokens to cookies
-      Cookies.set("access_token", response.data.access_token, {
-        expires: 1, // Token expires in 1 day
-        secure: true, // Ensure cookies are sent only over HTTPS
-        sameSite: "strict", // Protect against CSRF
-      });
-
-      Cookies.set("refresh_token", response.data.refresh_token, {
-        expires: 7, // Refresh token expires in 7 days
-        secure: true,
-        sameSite: "strict",
-      });
-
-      // stores the access token in the session
-      sessionStorage.setItem("access_token", response.data.access_token);
-
-      // Redirect to the dashboard
-      window.location.href = "/";
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-      setSuccess("");
-      console.error("Login Error:", err);
-    }
-  };
-
-  const handleSignupSubmit = async (e: React.FormEvent) => {
     setLoading(true);
-    e.preventDefault();
-    if (password !== confirmPassword) {
+    setError("");
+    setSuccess("");
+
+    if (!isLogin && password !== confirmPassword) {
       setError("Passwords do not match.");
+      setLoading(false);
       return;
     }
+
+    const endpoint = isLogin ? "/login" : "/register";
+    const payload = isLogin
+      ? { username, password }
+      : { username, email, password };
+
     try {
-      const response = await axios.post(`${BASE_URL}/register`, {
-        username,
-        email,
-        password,
-      });
-      setSuccess("Signup successful! Please log in.");
-      setError("");
-      setIsLogin(true);
-      console.log("Signup Response:", response.data);
+      const response = await axios.post(`${BASE_URL}${endpoint}`, payload);
+      setLoading(false);
+      setSuccess(
+        isLogin ? "Login successful!" : "Signup successful! Please log in."
+      );
+
+      if (isLogin) {
+        const { access_token, refresh_token } = response.data;
+        Cookies.set("access_token", access_token, {
+          expires: 1,
+          secure: true,
+          sameSite: "strict",
+        });
+        Cookies.set("refresh_token", refresh_token, {
+          expires: 7,
+          secure: true,
+          sameSite: "strict",
+        });
+        sessionStorage.setItem("access_token", access_token);
+        window.location.href = "/";
+      } else {
+        setIsLogin(true);
+      }
     } catch (err) {
-      setError("Signup failed. Please try again.");
-      setSuccess("");
-      console.error("Signup Error:", err);
+      console.error(err);
+      setError(
+        isLogin
+          ? "Login failed. Please check your credentials."
+          : "Signup failed. Please try again."
+      );
+      setLoading(false);
     }
-  };
-
-  const switchToSignup = () => {
-    setUsername("");
-    setPassword("");
-    setEmail("");
-    setConfirmPassword("");
-    setError("");
-    setSuccess("");
-    setIsLogin(false);
-  };
-
-  const switchToLogin = () => {
-    setUsername("");
-    setPassword("");
-    setEmail("");
-    setConfirmPassword("");
-    setError("");
-    setSuccess("");
-    setIsLogin(true);
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-purple-50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        {/* -- Header -- */}
         <h2 className="mb-6 text-center text-2xl font-bold text-purple-700">
           {isLogin ? "Log in to your account" : "Create an account"}
         </h2>
@@ -164,7 +128,6 @@ const Auth: React.FC = () => {
           </span>
         </div>
 
-        {/* -- Error/Success Messages -- */}
         {error && (
           <div className="mb-4 text-center text-sm text-red-600">{error}</div>
         )}
@@ -174,12 +137,7 @@ const Auth: React.FC = () => {
           </div>
         )}
 
-        {/* -- Form -- */}
-        <form
-          className="mt-6 flex flex-col space-y-4"
-          onSubmit={isLogin ? handleLoginSubmit : handleSignupSubmit}
-        >
-          {/* -- Username -- */}
+        <form className="mt-6 flex flex-col space-y-4" onSubmit={handleSubmit}>
           <div className="relative">
             <FontAwesomeIcon
               icon={faUser}
@@ -190,16 +148,14 @@ const Auth: React.FC = () => {
             </label>
             <input
               type="text"
-              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              title="Enter your username"
               placeholder="Username"
             />
           </div>
 
-          {/* -- Email (only for Sign Up) -- */}
           {!isLogin && (
             <div className="relative">
               <FontAwesomeIcon
@@ -211,17 +167,15 @@ const Auth: React.FC = () => {
               </label>
               <input
                 type="email"
-                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                title="Enter your email address"
                 placeholder="Email address"
               />
             </div>
           )}
 
-          {/* -- Password -- */}
           <div className="relative">
             <FontAwesomeIcon
               icon={faLock}
@@ -232,16 +186,14 @@ const Auth: React.FC = () => {
             </label>
             <input
               type="password"
-              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              title="Enter your password"
               placeholder="Password"
             />
           </div>
 
-          {/* -- Confirm Password (only for Sign Up) -- */}
           {!isLogin && (
             <div className="relative">
               <FontAwesomeIcon
@@ -253,39 +205,39 @@ const Auth: React.FC = () => {
               </label>
               <input
                 type="password"
-                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full rounded border border-gray-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-purple-600"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                title="Confirm your password"
                 placeholder="Confirm Password"
               />
             </div>
           )}
 
-          {/* -- Forgot Password (only for Login) -- */}
           {isLogin && (
             <div className="text-right">
               <button
                 type="button"
                 className="text-sm font-medium text-purple-600 hover:underline"
-                onClick={() => console.log("Forgot password? Implement me!")}
               >
                 Forgot password?
               </button>
             </div>
           )}
-          {/* -- Submit Button -- */}
+
           <button
             type="submit"
-            className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 cursor-pointer ${
+            className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 flex justify-center items-center ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={loading}
           >
             {loading ? (
-              // center
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white border-opacity-50"></div>
+              <span className="flex space-x-1">
+                <span className="h-2 w-2 bg-white rounded-full animate-bounce"></span>
+                <span className="h-2 w-2 bg-white rounded-full animate-bounce delay-200"></span>
+                <span className="h-2 w-2 bg-white rounded-full animate-bounce delay-400"></span>
+              </span>
             ) : isLogin ? (
               "Log In"
             ) : (
@@ -294,24 +246,23 @@ const Auth: React.FC = () => {
           </button>
         </form>
 
-        {/* -- Toggle Form -- */}
         <div className="mt-4 text-center">
           {isLogin ? (
             <p className="text-sm text-gray-600">
-              Don’t have an account?
+              Don’t have an account?{" "}
               <button
-                onClick={switchToSignup}
-                className="ml-1 font-medium text-purple-600 hover:underline cursor-pointer"
+                onClick={() => setIsLogin(false)}
+                className="ml-1 font-medium text-purple-600 hover:underline"
               >
                 Sign Up
               </button>
             </p>
           ) : (
             <p className="text-sm text-gray-600">
-              Already have an account?
+              Already have an account?{" "}
               <button
-                onClick={switchToLogin}
-                className="ml-1 font-medium text-purple-600 hover:underline cursor-pointer"
+                onClick={() => setIsLogin(true)}
+                className="ml-1 font-medium text-purple-600 hover:underline"
               >
                 Log In
               </button>
