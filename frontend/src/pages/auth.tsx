@@ -253,7 +253,7 @@ const Auth: React.FC = () => {
             />
             <button
               type="button"
-              className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400"
+              className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400 cursor-pointer"
               onClick={() => setShowPassword(!showPassword)}
               title={showPassword ? "Hide password" : "Show password"}
             >
@@ -289,7 +289,7 @@ const Auth: React.FC = () => {
               />
               <button
                 type="button"
-                className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400"
+                className="absolute top-2/3 right-3 transform -translate-y-1/2 text-gray-400 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 title={showConfirmPassword ? "Hide password" : "Show password"}
               >
@@ -305,7 +305,7 @@ const Auth: React.FC = () => {
             <div className="text-right">
               <button
                 type="button"
-                className="text-sm font-medium text-purple-600 hover:underline"
+                className="text-sm font-medium text-purple-600 hover:underline cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -315,7 +315,7 @@ const Auth: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 flex justify-center items-center ${
+            className={`w-full rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 flex justify-center items-center cursor-pointer ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -339,7 +339,7 @@ const Auth: React.FC = () => {
               Don’t have an account?{" "}
               <button
                 onClick={() => setIsLogin(false)}
-                className="ml-1 font-medium text-purple-600 hover:underline"
+                className="ml-1 font-medium text-purple-600 hover:underline cursor-pointer"
               >
                 Sign Up
               </button>
@@ -349,7 +349,7 @@ const Auth: React.FC = () => {
               Already have an account?{" "}
               <button
                 onClick={() => setIsLogin(true)}
-                className="ml-1 font-medium text-purple-600 hover:underline"
+                className="ml-1 font-medium text-purple-600 hover:underline cursor-pointer"
               >
                 Log In
               </button>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import PostList from "./PostList";
 
 const PostTimeline = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,7 +77,7 @@ const PostTimeline = () => {
         </ul>
       </nav>
 
-      {filteredPosts.length > 0 ? (
+      {/* {filteredPosts.length > 0 ? (
         <ul>
           {filteredPosts.map((post, index) => (
             <li key={index} className="border p-2 rounded mb-2">
@@ -88,7 +89,8 @@ const PostTimeline = () => {
         <p className="text-gray-500">
           No posts found. Please try publishing a post.
         </p>
-      )}
+      )} */}
+        <PostList />
     </div>
   );
 };

@@ -141,6 +141,8 @@ def get_videos():
     )
     playlist_response = playlist_request.execute()
 
+    print(playlist_response)
+
     return jsonify(playlist_response)
 
 
