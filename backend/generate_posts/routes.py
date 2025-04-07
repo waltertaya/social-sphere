@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, jsonify, request
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
@@ -17,7 +18,10 @@ client = OpenAI(
 )
 
 @generate_posts_routes.route("/", methods=['POST'])
+@jwt_required()
 def deepseek_posts_creation():
+
+	user_id = get_jwt_identity()
 
 	data = request.json.get('post', None)
 
