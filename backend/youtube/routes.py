@@ -141,7 +141,7 @@ def get_videos():
     )
     playlist_response = playlist_request.execute()
 
-    print(playlist_response)
+    # print(playlist_response)
 
     return jsonify(playlist_response)
 
@@ -168,6 +168,8 @@ def upload_video():
     channel_request = youtube.channels().list(part="contentDetails", mine=True)
     channel_response = channel_request.execute()
     uploads_playlist_id = channel_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+    # print(uploads_playlist_id)
 
     # Upload video
     request_data = request.get_json()

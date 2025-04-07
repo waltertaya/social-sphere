@@ -31,7 +31,7 @@ const PostList: React.FC = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("API Response:", data); // Debugging
+        // console.log("API Response:", data); // Debugging
 
         if (!data.items || !Array.isArray(data.items)) {
           setError("Invalid response from API.");
@@ -55,7 +55,7 @@ const PostList: React.FC = () => {
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Fetch error:", error);
+        // console.error("Fetch error:", error);
         setError("Error fetching posts.");
         setLoading(false);
       });

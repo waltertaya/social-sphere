@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
 from youtube.routes import youtube_routes
+from generate_posts.routes import generate_posts_routes
 from config import Config
 
 import os
@@ -22,5 +23,6 @@ if __name__ == '__main__':
     JWTManager(app)
     
     app.register_blueprint(youtube_routes, url_prefix='/api/v2/youtube')
+    app.register_blueprint(generate_posts_routes, url_prefix='/api/v2/chat-completion')
 
     app.run(port=os.getenv('PORT'), host=os.getenv('HOST'), debug=os.getenv('DEBUG'))
