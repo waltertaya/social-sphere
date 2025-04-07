@@ -85,3 +85,22 @@ def get_user():
         'username': user.username,
         'email': user.email
     }), 200
+
+@auth_blueprint.route('/verify', methods=['GET'])
+def verify_user():
+    user_id = request.json.get("user_id")
+
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify(
+                {
+                    "status": False
+                }
+            )
+
+    return jsonify(
+            {
+                "status": True
+            }
+        )
