@@ -13,7 +13,7 @@ load_dotenv()
 
 client = OpenAI(
 	api_key=os.getenv('LLMAPI'),
-	base_url="https://api.llmapi.com/"
+	base_url=os.getenv('BASE_URL')
 )
 
 @generate_posts_routes.route("/api/v1/chat-completion", methods=['POST'])
