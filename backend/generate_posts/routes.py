@@ -16,7 +16,7 @@ client = OpenAI(
 	base_url=os.getenv('BASE_URL')
 )
 
-@generate_posts_routes.route("/api/v1/chat-completion", methods=['POST'])
+@generate_posts_routes.route("/", methods=['POST'])
 def deepseek_posts_creation():
 
 	data = request.json.get('post', None)
