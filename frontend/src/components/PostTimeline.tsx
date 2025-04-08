@@ -21,6 +21,7 @@ const PostTimeline = () => {
     "Paused",
     "Awaiting Approval",
     "Error",
+    "Deleted",
   ];
 
   return (
@@ -48,15 +49,6 @@ const PostTimeline = () => {
             className="absolute left-3 top-1/3 text-gray-500"
           />
         </div>
-        <label className="ml-4 flex items-center">
-          <input
-            type="checkbox"
-            checked={showDeleted}
-            onChange={() => setShowDeleted(!showDeleted)}
-            className="mr-2"
-          />
-          Show Deleted
-        </label>
       </div>
 
       <nav className="border-b pb-2 mb-4">
