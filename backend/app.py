@@ -18,7 +18,9 @@ if __name__ == '__main__':
     app.config.from_object(Config)
 
     # CORS(app)
-    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+    # CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+    # CORS(app, supports_credentials=True, origins=["*"])
 
     JWTManager(app)
     
