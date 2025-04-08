@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-import SocialMediaPreview from "./SocialMediaPreview";
+import YouTubePreview from "./SocialMediaPreview";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const JwtToken = sessionStorage.getItem("access_token");
@@ -72,9 +72,9 @@ const PostPreviewOverlay: React.FC<PostPreviewOverlayProps> = ({
         </div>
       ) : (
         <div>
-          <SocialMediaPreview
-            generatedContent={generatedContent}
-            files={files}
+          <YouTubePreview
+            content={generatedContent["youtube"]}
+            file={files[0]}
           />
         </div>
       )}

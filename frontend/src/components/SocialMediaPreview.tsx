@@ -1,263 +1,148 @@
 import React, { useState, useEffect } from "react";
+import { FaThumbsUp, FaThumbsDown, FaShare, FaCommentDots, FaSave, FaUserCircle } from "react-icons/fa";
 
-interface SocialMediaContent {
-  youtube: {
+const YouTubePreview: React.FC<{
+  content: {
     title: string;
     description: string;
     tags: string[];
   };
-  tiktok: {
-    title: string;
-    description: string;
-    hashtags: string[];
-  };
-  instagram: {
-    caption: string;
-    hashtags: string[];
-  };
-  x: {
-    tweet: string;
-    hashtags: string[];
-  };
-}
+  file: File | null;
+}> = ({ content, file }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [edited, setEdited] = useState(content);
+  const [previewURL, setPreviewURL] = useState<string | null>(null);
 
-interface SocialMediaPreviewProps {
-  generatedContent: SocialMediaContent;
-  files: File[];
-}
-
-const SocialMediaPreview: React.FC<SocialMediaPreviewProps> = ({
-  generatedContent,
-  files,
-}) => {
-  // Create preview URL for the first file, if provided.
-  const imagePreview = files.length > 0 ? URL.createObjectURL(files[0]) : null;
-
-  // Track editing state per platform.
-  const [isEditing, setIsEditing] = useState({
-    youtube: false,
-    tiktok: false,
-    instagram: false,
-    x: false,
-  });
-
-  // Store editable content in state.
-  const [editedContent, setEditedContent] = useState<SocialMediaContent>(
-    generatedContent
-  );
-
-  // In case the generatedContent changes from parent, update local state.
   useEffect(() => {
-    setEditedContent(generatedContent);
-  }, [generatedContent]);
+    if (file) {
+      setPreviewURL(URL.createObjectURL(file));
+    }
+  }, [file]);
 
-  // Toggle editing mode for a platform.
-  const toggleEdit = (platform: keyof SocialMediaContent) => {
-    setIsEditing((prev) => ({ ...prev, [platform]: !prev[platform] }));
-  };
-
-  // Handle changes for each field.
-  const handleChange = (
-    platform: keyof SocialMediaContent,
-    field: string,
-    value: string
-  ) => {
-    setEditedContent((prev) => ({
+  const handleChange = (field: string, value: string) => {
+    setEdited((prev) => ({
       ...prev,
-      [platform]: {
-        ...prev[platform],
-        [field]: value,
-      },
+      [field]: value,
     }));
   };
 
-  // Handle array updates for hashtags or tags.
-  // For simplicity, this example expects comma-separated values.
-  const handleArrayChange = (
-    platform: keyof SocialMediaContent,
-    field: string,
-    value: string
-  ) => {
-    setEditedContent((prev) => ({
+  const handleArrayChange = (value: string) => {
+    setEdited((prev) => ({
       ...prev,
-      [platform]: {
-        ...prev[platform],
-        [field]: value.split(",").map((item) => item.trim()),
-      },
+      tags: value.split(",").map((tag) => tag.trim()),
     }));
   };
 
-  // Simulate posting the content.
-  const handlePost = (platform: keyof SocialMediaContent) => {
-    console.log(`Posting updated ${platform} content:`, editedContent[platform]);
-    // Reset editing mode after posting.
-    setIsEditing((prev) => ({ ...prev, [platform]: false }));
-    // Here you could add an API call to post the updated content.
-  };
-
-  // Render each card based on the platform.
-  const renderCard = (
-    platform: keyof SocialMediaContent,
-    labels: { title?: string; description?: string; caption?: string; tweet?: string; hashtagsLabel: string }
-  ) => {
-    const content = editedContent[platform];
-    return (
-      <div className="border rounded-lg shadow p-4 bg-white">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-2xl font-bold">{platform.toUpperCase()}</h3>
-          <div>
-            <button
-              onClick={() => toggleEdit(platform)}
-              className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-            >
-              {isEditing[platform] ? "Cancel" : "Edit"}
-            </button>
-            <button
-              onClick={() => handlePost(platform)}
-              className="bg-green-500 text-white px-3 py-1 rounded"
-            >
-              Post
-            </button>
-          </div>
-        </div>
-        {imagePreview && (
-          <div className="mb-2">
-            {files[0].type.startsWith("image") ? (
-              <img
-                src={imagePreview}
-                alt={`${platform} Preview`}
-                className="w-full h-auto object-cover rounded mb-2"
-              />
-            ) : (
-              <video
-                src={imagePreview}
-                controls
-                className="w-full h-auto object-cover rounded mb-2"
-              />
-            )}
-          </div>
-        )}
-        {labels.title && (
-          <div className="mb-2">
-            <p className="font-semibold">Title:</p>
-            {isEditing[platform] ? (
-              <input
-                type="text"
-                className="w-full border rounded px-2 py-1"
-                value={(content as any).title}
-                onChange={(e) => handleChange(platform, "title", e.target.value)}
-              />
-            ) : (
-              <p>{(content as any).title}</p>
-            )}
-          </div>
-        )}
-        {labels.description && (
-          <div className="mb-2">
-            <p className="font-semibold">Description:</p>
-            {isEditing[platform] ? (
-              <textarea
-                className="w-full border rounded px-2 py-1"
-                placeholder="Enter description here"
-                value={(content as any).description}
-                onChange={(e) =>
-                  handleChange(platform, "description", e.target.value)
-                }
-              />
-            ) : (
-              <p>{(content as any).description}</p>
-            )}
-          </div>
-        )}
-        {labels.caption && (
-          <div className="mb-2">
-            <p className="font-semibold">Caption:</p>
-            {isEditing[platform] ? (
-              <textarea
-                className="w-full border rounded px-2 py-1"
-                placeholder="Enter caption here"
-                value={(content as any).caption}
-                onChange={(e) =>
-                  handleChange(platform, "caption", e.target.value)
-                }
-              />
-            ) : (
-              <p>{(content as any).caption}</p>
-            )}
-          </div>
-        )}
-        {labels.tweet && (
-          <div className="mb-2">
-            <p className="font-semibold">Tweet:</p>
-            {isEditing[platform] ? (
-              <textarea
-                className="w-full border rounded px-2 py-1"
-                placeholder="Enter tweet here"
-                value={(content as any).tweet}
-                onChange={(e) =>
-                  handleChange(platform, "tweet", e.target.value)
-                }
-              />
-            ) : (
-              <p>{(content as any).tweet}</p>
-            )}
-          </div>
-        )}
-        <div className="mb-2">
-          <p className="font-semibold">{labels.hashtagsLabel}:</p>
-          {isEditing[platform] ? (
-            <input
-              type="text"
-              className="w-full border rounded px-2 py-1"
-              placeholder="Enter comma-separated values"
-              // Convert array to comma-separated string
-              value={(content as any).hashtags ? (content as any).hashtags.join(", ") : (content as any).tags.join(", ")}
-              onChange={(e) =>
-                handleArrayChange(
-                  platform,
-                  (content as any).hashtags ? "hashtags" : "tags",
-                  e.target.value
-                )
-              }
-            />
-          ) : (
-            <ul className="list-disc ml-5">
-              {(content as any).hashtags
-                ? (content as any).hashtags.map((item: string, index: number) => (
-                    <li key={index}>{item}</li>
-                  ))
-                : (content as any).tags.map((item: string, index: number) => (
-                    <li key={index}>{item}</li>
-                  ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    );
+  const handlePost = () => {
+    console.log("Posting to YouTube:", edited);
+    setIsEditing(false);
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {renderCard("youtube", {
-        title: "Title",
-        description: "Description",
-        hashtagsLabel: "Tags",
-      })}
-      {renderCard("tiktok", {
-        title: "Title",
-        description: "Description",
-        hashtagsLabel: "Hashtags",
-      })}
-      {renderCard("instagram", {
-        caption: "Caption",
-        hashtagsLabel: "Hashtags",
-      })}
-      {renderCard("x", {
-        tweet: "Tweet",
-        hashtagsLabel: "Hashtags",
-      })}
+    <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border">
+      {/* Media preview */}
+      <div className="relative bg-black h-64 flex items-center justify-center">
+        {previewURL ? (
+          file!.type.startsWith("image") ? (
+            <img src={previewURL} alt="Preview" className="w-full h-full object-cover" />
+          ) : (
+            <video src={previewURL} controls className="w-full h-full object-cover" />
+          )
+        ) : (
+          <div className="text-white text-4xl">▶️</div>
+        )}
+
+        {/* Fake video progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-red-600">
+          <div className="h-full bg-red-800 w-1/2"></div>
+        </div>
+
+        {/* Time marker */}
+        <div className="absolute bottom-2 right-2 text-white text-xs bg-black bg-opacity-50 px-1 rounded">
+          02:55 / 05:14
+        </div>
+      </div>
+
+      {/* Title and description */}
+      <div className="p-4">
+        {isEditing ? (
+          <>
+            <input
+              type="text"
+              className="w-full border rounded px-2 py-1 mb-2"
+              value={edited.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+            />
+            <textarea
+              className="w-full border rounded px-2 py-1 mb-2"
+              value={edited.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+            />
+            <input
+              type="text"
+              className="w-full border rounded px-2 py-1 mb-2"
+              placeholder="Comma separated tags"
+              value={edited.tags.join(", ")}
+              onChange={(e) => handleArrayChange(e.target.value)}
+            />
+          </>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold mb-1">{edited.title}</h2>
+            <p className="text-sm text-gray-700 mb-2">{edited.description}</p>
+          </>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center space-x-6 text-gray-600 mt-2 mb-3">
+          <div className="flex items-center space-x-1 cursor-pointer">
+            <FaThumbsUp /> <span>1.2K</span>
+          </div>
+          <div className="flex items-center space-x-1 cursor-pointer">
+            <FaThumbsDown />
+          </div>
+          <div className="flex items-center space-x-1 cursor-pointer">
+            <FaShare /> <span>Share</span>
+          </div>
+          <div className="flex items-center space-x-1 cursor-pointer">
+            <FaCommentDots />
+          </div>
+          <div className="flex items-center space-x-1 cursor-pointer">
+            <FaSave />
+          </div>
+        </div>
+
+        {/* Channel + Subscribe */}
+        <div className="flex justify-between items-center border-t pt-3">
+          <div className="flex items-center space-x-2">
+            <FaUserCircle className="text-2xl text-gray-500" />
+            <span className="font-medium text-gray-800">Your Channel</span>
+          </div>
+          <button className="bg-red-600 text-white px-4 py-1 rounded-full text-sm hover:bg-red-700">
+            Subscribe
+          </button>
+        </div>
+
+        {/* Edit / Post buttons */}
+        <div className="flex justify-end mt-4 space-x-2">
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="px-4 py-1 bg-blue-500 text-white rounded"
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </button>
+          {isEditing && (
+            <button
+              onClick={handlePost}
+              className="px-4 py-1 bg-green-500 text-white rounded"
+            >
+              Post
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default SocialMediaPreview;
+export default YouTubePreview;
