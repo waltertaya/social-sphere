@@ -23,6 +23,8 @@ const YouTubePreview: React.FC<{
   const [isEditing, setIsEditing] = useState(false);
   const [edited, setEdited] = useState(content);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (file) {
@@ -45,10 +47,7 @@ const YouTubePreview: React.FC<{
   };
 
   const handlePost = () => {
-    if (!file) {
-      console.error("No file selected");
-      return;
-    }
+    if (!file || isUploading) return;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -56,20 +55,35 @@ const YouTubePreview: React.FC<{
     formData.append("description", edited.description);
     formData.append("privacyStatus", edited.privacyStatus);
 
-    fetch(`${API_BASE_URL}/youtube/upload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${JwtToken}`, // DO NOT set 'Content-Type' here; the browser will set it automatically
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Upload successful:", data);
-      })
-      .catch((error) => {
-        console.error("Error uploading video:", error);
-      });
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE_URL}/youtube/upload`, true);
+    xhr.setRequestHeader("Authorization", `Bearer ${JwtToken}`);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
+      }
+    };
+
+    xhr.onload = () => {
+      setIsUploading(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const response = JSON.parse(xhr.responseText);
+        console.log("Upload successful:", response);
+        setUploadProgress(0);
+      } else {
+        console.error("Upload failed:", xhr.statusText);
+      }
+    };
+
+    xhr.onerror = () => {
+      setIsUploading(false);
+      console.error("Upload error");
+    };
+
+    setIsUploading(true);
+    xhr.send(formData);
   };
 
   return (
@@ -105,13 +119,20 @@ const YouTubePreview: React.FC<{
         </div>
       </div>
 
+      {/* Upload progress bar */}
+      {isUploading && (
+        <div className="w-full bg-gray-200 h-2">
+          <div
+            className="bg-green-500 h-full transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+        </div>
+      )}
+
       {/* Title and description */}
       <div className="p-4">
         {isEditing ? (
           <>
-            <label htmlFor="title-input" className="sr-only">
-              Title
-            </label>
             <input
               id="title-input"
               type="text"
@@ -133,11 +154,7 @@ const YouTubePreview: React.FC<{
               value={edited.tags.join(", ")}
               onChange={(e) => handleArrayChange(e.target.value)}
             />
-            <label htmlFor="privacy-status-select" className="sr-only">
-              Privacy Status
-            </label>
             <select
-              id="privacy-status-select"
               className="w-full border rounded px-2 py-1 mb-2"
               value={edited.privacyStatus}
               onChange={(e) => handleChange("privacyStatus", e.target.value)}
@@ -195,9 +212,14 @@ const YouTubePreview: React.FC<{
           {isEditing && (
             <button
               onClick={handlePost}
-              className="px-4 py-1 bg-green-500 text-white rounded"
+              disabled={isUploading}
+              className={`px-4 py-1 text-white rounded ${
+                isUploading
+                  ? "bg-green-400 cursor-not-allowed"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
             >
-              Post
+              {isUploading ? `Uploading... ${uploadProgress}%` : "Post"}
             </button>
           )}
         </div>
