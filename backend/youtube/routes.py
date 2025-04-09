@@ -171,13 +171,26 @@ def upload_video():
 
     # print(uploads_playlist_id)
 
-    # Upload video
-    request_data = request.get_json()
-    video_title = request_data.get("title")
-    video_description = request_data.get("description")
-    video_path = request_data.get("path")
+    # print(request.json)
+    video = request.files["file"]
 
-    if not video_title or not video_description or not video_path:
+    file_path = os.path.join('/tmp', video.filename)
+    video.save(file_path)
+
+    # Upload video
+    # request_data = request.get_json()
+    # video_title = request_data.get("title")
+    # video_description = request_data.get("description")
+    # privacy_status = request_data.get("privacyStatus")
+    # # video_path = request_data.get("file")
+    video_title = request.form.get("title")
+    video_description = request.form.get("description")
+    privacy_status = request.form.get("privacyStatus")
+
+    print(video_title, "\n", video_description, "\n", privacy_status)
+    print(file_path)
+
+    if not video_title or not video_description or not file_path or not privacy_status:
         return jsonify({"error": "Missing required fields"}), 400
 
     request_body = {
@@ -186,11 +199,11 @@ def upload_video():
             "description": video_description
         },
         "status": {
-            "privacyStatus": "private"
+            "privacyStatus": privacy_status
         }
     }
 
-    media_file = MediaFileUpload(video_path)
+    media_file = MediaFileUpload(file_path)
     insert_request = youtube.videos().insert(
         part="snippet,status",
         body=request_body,

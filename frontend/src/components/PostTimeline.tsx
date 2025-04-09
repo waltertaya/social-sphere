@@ -5,7 +5,6 @@ import PostList from "./PostList";
 
 const PostTimeline = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [showDeleted, setShowDeleted] = useState(false);
   const [activeTab, setActiveTab] = useState("All Posts");
 
   const posts: { title: string }[] = [];

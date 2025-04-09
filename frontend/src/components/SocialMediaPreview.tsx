@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { FaThumbsUp, FaThumbsDown, FaShare, FaCommentDots, FaSave, FaUserCircle } from "react-icons/fa";
+import {
+  FaThumbsUp,
+  FaThumbsDown,
+  FaShare,
+  FaCommentDots,
+  FaSave,
+  FaUserCircle,
+} from "react-icons/fa";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const JwtToken = sessionStorage.getItem("access_token");
 
 const YouTubePreview: React.FC<{
   content: {
     title: string;
     description: string;
     tags: string[];
+    privacyStatus: string;
   };
   file: File | null;
 }> = ({ content, file }) => {
@@ -34,8 +45,31 @@ const YouTubePreview: React.FC<{
   };
 
   const handlePost = () => {
-    console.log("Posting to YouTube:", edited);
-    setIsEditing(false);
+    if (!file) {
+      console.error("No file selected");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", edited.title);
+    formData.append("description", edited.description);
+    formData.append("privacyStatus", edited.privacyStatus);
+
+    fetch(`${API_BASE_URL}/youtube/upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${JwtToken}`, // DO NOT set 'Content-Type' here; the browser will set it automatically
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Upload successful:", data);
+      })
+      .catch((error) => {
+        console.error("Error uploading video:", error);
+      });
   };
 
   return (
@@ -44,9 +78,17 @@ const YouTubePreview: React.FC<{
       <div className="relative bg-black h-64 flex items-center justify-center">
         {previewURL ? (
           file!.type.startsWith("image") ? (
-            <img src={previewURL} alt="Preview" className="w-full h-full object-cover" />
+            <img
+              src={previewURL}
+              alt="Preview"
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <video src={previewURL} controls className="w-full h-full object-cover" />
+            <video
+              src={previewURL}
+              controls
+              className="w-full h-full object-cover"
+            />
           )
         ) : (
           <div className="text-white text-4xl">▶️</div>
@@ -67,16 +109,22 @@ const YouTubePreview: React.FC<{
       <div className="p-4">
         {isEditing ? (
           <>
+            <label htmlFor="title-input" className="sr-only">
+              Title
+            </label>
             <input
+              id="title-input"
               type="text"
               className="w-full border rounded px-2 py-1 mb-2"
               value={edited.title}
               onChange={(e) => handleChange("title", e.target.value)}
+              placeholder="Enter title"
             />
             <textarea
               className="w-full border rounded px-2 py-1 mb-2"
               value={edited.description}
               onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Enter description"
             />
             <input
               type="text"
@@ -85,6 +133,19 @@ const YouTubePreview: React.FC<{
               value={edited.tags.join(", ")}
               onChange={(e) => handleArrayChange(e.target.value)}
             />
+            <label htmlFor="privacy-status-select" className="sr-only">
+              Privacy Status
+            </label>
+            <select
+              id="privacy-status-select"
+              className="w-full border rounded px-2 py-1 mb-2"
+              value={edited.privacyStatus}
+              onChange={(e) => handleChange("privacyStatus", e.target.value)}
+            >
+              <option value="public">Public</option>
+              <option value="unlisted">Unlisted</option>
+              <option value="private">Private</option>
+            </select>
           </>
         ) : (
           <>
