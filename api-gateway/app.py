@@ -1,15 +1,22 @@
 import time
 import uuid
-import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask, request, Response, g
 from flask_cors import CORS
 from pythonjsonlogger import jsonlogger
 from config import config
 from utils import proxy_request
+from flask_talisman import Talisman
 
 # Initialize Flask app
 app = Flask(__name__)
+
+Talisman(
+    app,
+    content_security_policy=None,  # APIs usually don't need CSP
+    force_https=True,
+    frame_options="DENY"
+)
 
 # CORS configuration
 CORS(
