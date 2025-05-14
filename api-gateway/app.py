@@ -1,5 +1,6 @@
 import time
 import uuid
+import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask, request, Response, g
 from flask_cors import CORS
@@ -14,7 +15,7 @@ app = Flask(__name__)
 Talisman(
     app,
     content_security_policy=None,  # APIs usually don't need CSP
-    force_https=True,
+    force_https=False, # force_https=True,
     frame_options="DENY"
 )
 
@@ -28,7 +29,8 @@ CORS(
             "allow_headers": ["Authorization","Content-Type"],
             "supports_credentials": True
         }
-    }
+    },
+    automatic_options=False
 )
 
 # Logging setup
@@ -56,7 +58,12 @@ def start_request():
 
 @app.after_request
 def after_request(response):
-    duration = time.time() - g.start_time
+    start = getattr(g, 'start_time', None)
+    if start is None:
+        # no trace_id/start_time — probably a CORS preflight or early abort
+        return response
+
+    duration = time.time() - start
     log_data = {
         'level': 'info',
         'timestamp': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
@@ -68,7 +75,7 @@ def after_request(response):
         'client_ip': request.remote_addr or '',
         'user_id': getattr(g, 'user_id', '')
     }
-    app.logger.info(f"request", extra=log_data)
+    app.logger.info("request", extra=log_data)
     return response
 
 # Health check
