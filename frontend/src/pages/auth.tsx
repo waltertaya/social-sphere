@@ -32,7 +32,7 @@ const Auth: React.FC = () => {
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  console.log(BASE_URL)
+  // console.log(BASE_URL)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

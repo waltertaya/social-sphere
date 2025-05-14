@@ -17,14 +17,11 @@ if __name__ == '__main__':
     app.secret_key = os.getenv('SECRET_KEY')
     app.config.from_object(Config)
 
-    # CORS(app)
-    # CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
-    # CORS(app, supports_credentials=True, origins=["*"])
+    CORS(app)
 
     JWTManager(app)
     
-    app.register_blueprint(youtube_routes, url_prefix='/youtube')
-    app.register_blueprint(generate_posts_routes, url_prefix='/chat-completion')
+    app.register_blueprint(youtube_routes, url_prefix='/api/v2/bd/youtube')
+    app.register_blueprint(generate_posts_routes, url_prefix='/api/v2/bd/chat-completion')
 
     app.run(port=os.getenv('PORT'), host=os.getenv('HOST'), debug=os.getenv('DEBUG'))

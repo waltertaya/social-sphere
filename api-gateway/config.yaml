@@ -1,0 +1,14 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+cors:
+  origins:
+    - http://localhost:5173
+
+services:
+  auth: http://localhost:8000
+  backend: http://localhost:5000
+
+jwt:
+  secret: eb40auu9y-dca9-47dc-a928-3a1624aaa8v3
