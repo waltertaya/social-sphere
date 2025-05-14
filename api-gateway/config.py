@@ -8,5 +8,6 @@ class Config:
         self.cors = data.get("cors", {})
         self.services = data.get("services", {})
         self.jwt = data.get("jwt", {})
+        self.logging = data.get("logging", {})
 
 config = Config()

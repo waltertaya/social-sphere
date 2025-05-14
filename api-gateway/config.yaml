@@ -12,3 +12,7 @@ services:
 
 jwt:
   secret: eb40auu9y-dca9-47dc-a928-3a1624aaa8v3
+
+logging:
+  file: logs/api-gateway.log
+  level: INFO
