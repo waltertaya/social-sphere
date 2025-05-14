@@ -30,7 +30,9 @@ const Auth: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  console.log(BASE_URL)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,13 +71,13 @@ const Auth: React.FC = () => {
       return;
     }
 
-    const endpoint = isLogin ? "/login" : "/register";
+    const endpoint = isLogin ? "login" : "register";
     const payload = isLogin
       ? { username: formData.username, password: formData.password }
       : { username: formData.username, email: formData.email, password: formData.password };
 
     try {
-      const response = await axios.post(`${BASE_URL}${endpoint}`, payload);
+      const response = await axios.post(`${BASE_URL}/auth/${endpoint}`, payload);
       setLoading(false);
       setSuccess(
         isLogin ? "Login successful!" : "Signup successful! Please log in."

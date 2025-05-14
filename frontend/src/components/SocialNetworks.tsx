@@ -34,7 +34,7 @@ export default function SocialNetworks() {
     Discord: false,
   });
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const JwtToken = sessionStorage.getItem("access_token");
 
   // For now, check YouTube account status.
@@ -44,7 +44,7 @@ export default function SocialNetworks() {
       return;
     }
 
-    fetch(`${API_BASE_URL}/youtube/status`, {
+    fetch(`${API_BASE_URL}/bd/youtube/status`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,

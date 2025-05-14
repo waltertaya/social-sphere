@@ -12,7 +12,7 @@ const SocialAccounts: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const JwtToken = sessionStorage.getItem("access_token");
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const SocialAccounts: React.FC = () => {
     }
 
     setLoading(true);
-    fetch(`${API_BASE_URL}/youtube/status`, {
+    fetch(`${API_BASE_URL}/bd/youtube/status`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,
@@ -51,7 +51,7 @@ const SocialAccounts: React.FC = () => {
 
     if (platform === "YouTube") {
       setLoading(true);
-      fetch(`${API_BASE_URL}/youtube/auth`, {
+      fetch(`${API_BASE_URL}/bd/youtube/auth`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${JwtToken}`,
@@ -92,7 +92,7 @@ const SocialAccounts: React.FC = () => {
     }
 
     setLoading(true);
-    fetch(`${API_BASE_URL}/youtube/logout`, {
+    fetch(`${API_BASE_URL}/bd/youtube/logout`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,

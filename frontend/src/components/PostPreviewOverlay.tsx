@@ -4,7 +4,7 @@ import { faSpinner, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import YouTubePreview from "./SocialMediaPreview";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const JwtToken = sessionStorage.getItem("access_token");
 
 interface PostPreviewOverlayProps {
@@ -18,13 +18,13 @@ const PostPreviewOverlay: React.FC<PostPreviewOverlayProps> = ({
   files,
   onClose,
 }) => {
-  const [generatedContent, setGeneratedContent] = useState<any>(null);
+  const [generatedContent, setGeneratedContent] = useState<{ youtube: { title: string; description: string; tags: string[]; privacyStatus: string } } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGeneratedContent = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/chat-completion/`, {
+        const response = await fetch(`${API_BASE_URL}/bd/chat-completion/`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${JwtToken}`,
@@ -34,7 +34,14 @@ const PostPreviewOverlay: React.FC<PostPreviewOverlayProps> = ({
         });
 
         const data = await response.json();
-        setGeneratedContent(data);
+        setGeneratedContent({
+          youtube: {
+            title: data.youtube.title || "",
+            description: data.youtube.description || "",
+            tags: data.youtube.tags || [],
+            privacyStatus: data.youtube.privacyStatus || "public",
+          },
+        });
       } catch (error) {
         console.log("Error fetching generated content:", error);
         alert("Error generating content. Please try again.");
@@ -73,7 +80,7 @@ const PostPreviewOverlay: React.FC<PostPreviewOverlayProps> = ({
       ) : (
         <div>
           <YouTubePreview
-            content={generatedContent["youtube"]}
+            content={generatedContent?.youtube || {}}
             file={files[0]}
           />
         </div>

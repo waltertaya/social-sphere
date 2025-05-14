@@ -11,7 +11,7 @@ interface Post {
   link?: string; // Optional link for more details
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const JwtToken = sessionStorage.getItem("access_token");
 
 const PostList: React.FC = () => {
@@ -26,7 +26,7 @@ const PostList: React.FC = () => {
       return;
     }
 
-    fetch(`${API_BASE_URL}/youtube/videos`, {
+    fetch(`${API_BASE_URL}/bd/youtube/videos`, {
       headers: { Authorization: `Bearer ${JwtToken}` },
     })
       .then((res) => res.json())

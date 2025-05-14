@@ -4,7 +4,7 @@ const UserProfile = () => {
   const [user, setUser] = useState<{ email: string; username: string } | null>(
     null
   );
-  const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const JwtToken = sessionStorage.getItem("access_token");
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const UserProfile = () => {
       return;
     }
 
-    fetch(`${API_BASE_URL}/user`, {
+    fetch(`${API_BASE_URL}/auth/user`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${JwtToken}`,

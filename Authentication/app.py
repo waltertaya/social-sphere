@@ -23,6 +23,6 @@ if __name__ == '__main__':
 
         db.create_all()
     
-    app.register_blueprint(auth_blueprint, url_prefix='/api/v2/auth')
+    app.register_blueprint(auth_blueprint)
 
     app.run(port=os.getenv('PORT'), host=os.getenv('HOST'), debug=os.getenv('DEBUG'))

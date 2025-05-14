@@ -8,7 +8,7 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const JwtToken = sessionStorage.getItem("access_token");
 
 const YouTubePreview: React.FC<{
@@ -56,7 +56,7 @@ const YouTubePreview: React.FC<{
     formData.append("privacyStatus", edited.privacyStatus);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${API_BASE_URL}/youtube/upload`, true);
+    xhr.open("POST", `${API_BASE_URL}/bd/youtube/upload`, true);
     xhr.setRequestHeader("Authorization", `Bearer ${JwtToken}`);
 
     xhr.upload.onprogress = (event) => {

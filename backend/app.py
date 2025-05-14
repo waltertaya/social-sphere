@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     JWTManager(app)
     
-    app.register_blueprint(youtube_routes, url_prefix='/api/v2/youtube')
-    app.register_blueprint(generate_posts_routes, url_prefix='/api/v2/chat-completion')
+    app.register_blueprint(youtube_routes, url_prefix='/youtube')
+    app.register_blueprint(generate_posts_routes, url_prefix='/chat-completion')
 
     app.run(port=os.getenv('PORT'), host=os.getenv('HOST'), debug=os.getenv('DEBUG'))
