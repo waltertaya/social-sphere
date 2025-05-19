@@ -28,7 +28,7 @@ load_dotenv()
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    redirect_uri="http://localhost:8080/api/v2/youtube/callback"  # Make sure this matches in your client_secret.json
+    redirect_uri="http://localhost:8080/api/v2/bd/youtube/callback"  # Make sure this matches in your client_secret.json
 )
 
 @youtube_routes.route("/auth", methods=["GET"])
